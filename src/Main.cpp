@@ -190,8 +190,6 @@ int main()
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::ShowDemoWindow();
-
 			if (showConfigWindow)
 			{
 				ImGui::Begin("Configuration (Press Space to Hide/Show)");
