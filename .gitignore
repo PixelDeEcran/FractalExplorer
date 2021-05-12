@@ -1,0 +1,10 @@
+.vs/
+Debug/
+Release/
+Dependencies/
+
+imgui.ini
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
