@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iomanip>
 
+#include "DoubleDouble.h"
 #include "opengl_utils/Renderer.h"
 #include "opengl_utils/VertexBufferLayout.h"
 
@@ -23,21 +24,21 @@ int precisionId = 0;
 
 int maxIterations = 50;
 float rotation = 0.0;
-double radius = 8.0;
-double x = -0.75;
-double y = 0;
-double zoom = 200;
+DoubleDouble radius = 8.0;
+DoubleDouble x = -0.75;
+DoubleDouble y = 0;
+DoubleDouble zoom = 200;
 
 float colorA[3] = { 0.5f, 0.5f, 0.5f };
 float colorB[3] = { 0.5f, 0.5f, 0.5f };
 float colorC[3] = { 1.0f, 1.0f, 1.0f };
 float colorD[3] = { 0.0f, 0.1f, 0.2f };
 
-float mandelbrot_z_r = 0.0;
-float mandelbrot_z_i = 0.0;
+DoubleDouble mandelbrot_z_r = 0.0;
+DoubleDouble mandelbrot_z_i = 0.0;
 
-float julia_c_r = 0.285;
-float julia_c_i = 0.01;
+DoubleDouble julia_c_r = 0.285;
+DoubleDouble julia_c_i = 0.01;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -56,25 +57,26 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
 
-		double amountX = ((mouseX - double(width) / 2) / zoom) * 0.1 * (signbit(yoffset) == 0 ? 1 : -1);
-		double amountY = ((mouseY - double(height) / 2) / zoom) * 0.1 * (signbit(yoffset) == 0 ? 1 : -1);
+		DoubleDouble amountX = (DoubleDouble(mouseX - double(width) / 2) / zoom) * 0.1 * (signbit(yoffset) == 0 ? 1 : -1);
+		DoubleDouble amountY = (DoubleDouble(mouseY - double(height) / 2) / zoom) * 0.1 * (signbit(yoffset) == 0 ? 1 : -1);
 		
-		x += amountX * cos(rotation) - amountY * sin(rotation);
-		y += amountX * sin(rotation) + amountY * cos(rotation);
+		x = x + (amountX * cos(rotation) - amountY * sin(rotation));
+		y = y + (amountX * sin(rotation) + amountY * cos(rotation));
 		
 		if (yoffset > 0)
 		{
-			zoom += zoom * 0.1 * abs(yoffset);
+			zoom = zoom + (zoom * 0.1 * abs(yoffset));
 		}
 		else
 		{
-			zoom -= zoom * 0.1 * abs(yoffset);
+			zoom = zoom - (zoom * 0.1 * abs(yoffset));
 		}
 	}
 }
 
+
 int main()
-{
+{	
 	glewExperimental = true;
 	if (!glfwInit())
 	{
@@ -130,7 +132,8 @@ int main()
 
 		Shader shaders[] = {
 			Shader("ressources/shaders/Fractal32.shader"),
-			Shader("ressources/shaders/Fractal64.shader")
+			Shader("ressources/shaders/Fractal64.shader"),
+			Shader("ressources/shaders/Fractal128D.shader")
 		};
 
 		va.Unbind();
@@ -161,11 +164,11 @@ int main()
 			{
 				if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 				{
-					double amountX = (mouseX - prevMouseX) / zoom;
-					double amountY = (mouseY - prevMouseY) / zoom;
+					DoubleDouble amountX = DoubleDouble(mouseX - prevMouseX) / zoom;
+					DoubleDouble amountY = DoubleDouble(mouseY - prevMouseY) / zoom;
 
-					x -= amountX * cos(rotation) - amountY * sin(rotation);
-					y -= amountX * sin(rotation) + amountY * cos(rotation);
+					x = x - (amountX * cos(rotation) - amountY * sin(rotation));
+					y = y - (amountX * sin(rotation) + amountY * cos(rotation));
 				}
 				else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 				{
@@ -206,14 +209,15 @@ int main()
 
 					ImGui::Text("Precision :"); ImGui::SameLine();
 					ImGui::RadioButton("32-bit", &precisionId, 0); ImGui::SameLine();
-					ImGui::RadioButton("64-bit", &precisionId, 1);
+					ImGui::RadioButton("64-bit", &precisionId, 1); ImGui::SameLine();
+					ImGui::RadioButton("128-bit", &precisionId, 2);
 
 					ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
-					ImGui::InputDouble("X", &x, 10 / zoom, 50 / zoom);
-					ImGui::InputDouble("Y", &y, 10 / zoom, 50 / zoom);
-					ImGui::InputDouble("Zoom", &zoom, zoom * 0.1, zoom * 0.25);
-					ImGui::InputDouble("Radius", &radius, 0.1, 1.0);
+					//ImGui::InputDouble("X", &x, 10 / zoom, 50 / zoom);
+					//ImGui::InputDouble("Y", &y, 10 / zoom, 50 / zoom);
+					//ImGui::InputDouble("Zoom", &zoom, zoom * 0.1, zoom * 0.25);
+					//ImGui::InputDouble("Radius", &radius, 0.1, 1.0);
 					ImGui::SliderAngle("Rotation", &rotation, 0, 360);
 
 					if (isMaxIterationsAuto)
@@ -236,14 +240,14 @@ int main()
 					case 0:
 						ImGui::Text("Mandelbrot Settings :");
 						
-						ImGui::SliderFloat("z_r", &mandelbrot_z_r, 0.0f, 1.0f, "%.3f");
-						ImGui::SliderFloat("z_i", &mandelbrot_z_i, 0.0f, 1.0f, "%.3f");
+						//ImGui::SliderFloat("z_r", &mandelbrot_z_r, 0.0f, 1.0f, "%.3f");
+						//ImGui::SliderFloat("z_i", &mandelbrot_z_i, 0.0f, 1.0f, "%.3f");
 						break;
 					case 1:
 						ImGui::Text("Julia Settings :");
 
-						ImGui::SliderFloat("c_r", &julia_c_r, 0.0f, 1.0f, "%.3f");
-						ImGui::SliderFloat("c_i", &julia_c_i, 0.0f, 1.0f, "%.3f");
+						//ImGui::SliderFloat("c_r", &julia_c_r, 0.0f, 1.0f, "%.3f");
+						//ImGui::SliderFloat("c_i", &julia_c_i, 0.0f, 1.0f, "%.3f");
 						break;
 					}
 					
@@ -277,12 +281,9 @@ int main()
 			
 			shader.Bind();
 
-			double renderX = x;
-			double renderY = y;
-
 			if (isMaxIterationsAuto)
 			{
-				maxIterations = log(zoom) * log10(zoom) * 0.75 + 50;
+				maxIterations = log(zoom.to_double()) * log10(zoom.to_double()) * 0.75 + 50;
 			}
 
 			shader.SetUniform1i("max_iterations", maxIterations);
@@ -292,53 +293,46 @@ int main()
 			shader.SetUniform1f("rotation", rotation);
 
 			switch (precisionId)
-				{
-				case 0:
-					shader.SetUniform1f("radius", static_cast<float>(radius));
-					shader.SetUniform1f("x", static_cast<float>(renderX));
-					shader.SetUniform1f("y", static_cast<float>(renderY));
-					shader.SetUniform1f("zoom", static_cast<float>(zoom));
-
-				
-					shader.SetUniform1f("mandelbrot_z_r", mandelbrot_z_r);
-					shader.SetUniform1f("mandelbrot_z_i", mandelbrot_z_i);
-				
-					shader.SetUniform1f("julia_c_r", julia_c_r);
-					shader.SetUniform1f("julia_c_i", julia_c_i);
-					break;
-				case 1:
-					shader.SetUniform1d("radius", radius);
-					shader.SetUniform1d("x", renderX);
-					shader.SetUniform1d("y", renderY);
-					shader.SetUniform1d("zoom", zoom);
+			{
+			case 0:
+				shader.SetUniform1f("radius", radius.to_float());
+				shader.SetUniform1f("x", x.to_float());
+				shader.SetUniform1f("y", y.to_float());
+				shader.SetUniform1f("zoom", zoom.to_float());
 
 
-					shader.SetUniform1d("mandelbrot_z_r", mandelbrot_z_r);
-					shader.SetUniform1d("mandelbrot_z_i", mandelbrot_z_i);
+				shader.SetUniform1f("mandelbrot_z_r", mandelbrot_z_r.to_float());
+				shader.SetUniform1f("mandelbrot_z_i", mandelbrot_z_i.to_float());
 
-					shader.SetUniform1d("julia_c_r", julia_c_r);
-					shader.SetUniform1d("julia_c_i", julia_c_i);
-					break;
-				case 2:
-					float tmp[2];
-				
-					shader.SetUniform1f("radius", static_cast<float>(radius));
+				shader.SetUniform1f("julia_c_r", julia_c_r.to_float());
+				shader.SetUniform1f("julia_c_i", julia_c_i.to_float());
+				break;
+			case 1:
+				shader.SetUniform1d("radius", radius.to_double());
+				shader.SetUniform1d("x", x.to_double());
+				shader.SetUniform1d("y", y.to_double());
+				shader.SetUniform1d("zoom", zoom.to_double());
 
-					tmp[0] = (float)renderX;
-					tmp[1] = renderX - tmp[0];
-					shader.SetUniform2f("x", tmp[0], tmp[1]);
 
-					tmp[0] = (float)renderY;
-					tmp[1] = renderY - tmp[0];
-					shader.SetUniform2f("y", tmp[0], tmp[1]);
+				shader.SetUniform1d("mandelbrot_z_r", mandelbrot_z_r.to_double());
+				shader.SetUniform1d("mandelbrot_z_i", mandelbrot_z_i.to_double());
 
-					tmp[0] = (float)zoom;
-					tmp[1] = zoom - tmp[0];
-					shader.SetUniform2f("zoom", tmp[0], tmp[1]);
+				shader.SetUniform1d("julia_c_r", julia_c_r.to_double());
+				shader.SetUniform1d("julia_c_i", julia_c_i.to_double());
+				break;
+			case 2:
+				shader.SetUniform2d("radius", radius);
+				shader.SetUniform2d("x", x);
+				shader.SetUniform2d("y", y);
+				shader.SetUniform2d("zoom", zoom);
 
-					std::cout << "Zoom : " << tmp[0] << " ; " << tmp[1] << std::endl;
-					break;
-				}
+				shader.SetUniform2d("mandelbrot_z_r", mandelbrot_z_r);
+				shader.SetUniform2d("mandelbrot_z_i", mandelbrot_z_i);
+
+				shader.SetUniform2d("julia_c_r", julia_c_r);
+				shader.SetUniform2d("julia_c_i", julia_c_i);
+				break;
+			}
 
 			shader.SetUniform3f("colorA", colorA[0], colorA[1], colorA[2]);
 			shader.SetUniform3f("colorB", colorB[0], colorB[1], colorB[2]);
@@ -348,6 +342,9 @@ int main()
 			renderer.Draw(va, ib, shader);
 			
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			std::cout << "X : " << x.to_double_double()[0] << " ; " << x.to_double_double()[1] << std::endl;
+			std::cout << "Y : " << y.to_double_double()[0] << " ; " << y.to_double_double()[1] << std::endl;
 
 			glViewport(0, 0, width, height);
 			GLCall(glfwSwapBuffers(window));

@@ -2,6 +2,8 @@
 
 #include <string>
 
+class DoubleDouble;
+
 struct ShaderProgramSource
 {
 	std::string VertexSource;
@@ -23,6 +25,7 @@ public:
 	void SetUniform1i(const std::string& name, int v0);
 	void SetUniform1f(const std::string& name, float v0);
 	void SetUniform1d(const std::string& name, double v0);
+	void SetUniform2d(const std::string& name, DoubleDouble v0);
 	void SetUniform2f(const std::string& name, float v0, float v1);
 	void SetUniform3f(const std::string& name, float v0, float v1, float v2);
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);

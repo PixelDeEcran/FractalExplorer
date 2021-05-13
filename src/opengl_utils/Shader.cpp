@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Renderer.h"
+#include "../DoubleDouble.h"
 
 Shader::Shader(const std::string& filepath)
 	: m_FilePath(m_FilePath), m_RendererID(0)
@@ -114,6 +115,12 @@ void Shader::SetUniform1f(const std::string& name, float v0)
 void Shader::SetUniform1d(const std::string& name, double v0)
 {
 	GLCall(glUniform1d(GetUniformLocation(name), v0));
+}
+
+void Shader::SetUniform2d(const std::string& name, DoubleDouble v0)
+{
+	std::vector<double> tmp = v0.to_double_double();
+	GLCall(glUniform2d(GetUniformLocation(name), tmp[0], tmp[1]));
 }
 
 void Shader::SetUniform2f(const std::string& name, float v0, float v1)
